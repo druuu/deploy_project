@@ -1,0 +1,10 @@
+---
+- hosts: django-servers
+  remote_user: root
+  vars_prompt:
+    - name: "project_name"
+      prompt: "name of the project"
+      privat: no
+
+  roles:
+    - deploy_project

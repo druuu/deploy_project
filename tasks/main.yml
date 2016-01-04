@@ -1,0 +1,7 @@
+---
+# tasks file for deploy_project
+
+- include: django-server-config.yml 
+- include: install-mysql-prod.yml
+- include: install-django.yml
+- include: setup-nginx.yml

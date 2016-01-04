@@ -1,0 +1,55 @@
+---
+- name: check grub file
+  shell: test -f  /boot/grub/menu.lst
+  register: grub_file
+  failed_when: False
+
+
+- name: update grub
+  command: "sudo update-grub -y"
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  when: grub_file.rc != 0
+
+
+- name: update apt-packages
+  apt: "upgrade=dist update_cache=yes"
+
+- name: Install required apt-packages
+  apt: "name='{{ item }}' state=present force=yes"
+
+  with_items:
+    - nginx
+    - python-dev
+    - python-virtualenv
+    - python-pip
+    - openjdk-7-jre-headless
+    - libtiff5-dev
+    - libjpeg8-dev
+    - zlib1g-dev
+    - libfreetype6-dev
+    - liblcms2-dev
+    - libwebp-dev
+    - tcl8.6-dev
+    - tk8.6-dev
+    - python-tk
+    - redis-server
+    - git
+    - libmysqlclient-dev
+    - ruby
+    - supervisor
+
+- name: install uwsgi
+  pip: name=uwsgi
+
+- name: Create UWSGI vassals directory
+  file: "path={{vassals_dir}}  state=directory"
+
+- name: start supervisord
+  service: name=nginx state=started
+
+- name: setup uwsgi in supervisor
+  template: "src=uwsgi-server.j2 dest={{supervisor_conf_dir}}/uwsgi-runner.conf"
+
+- name: update supervisor
+  supervisorctl: "name=uwsgi-runner state=restarted"
